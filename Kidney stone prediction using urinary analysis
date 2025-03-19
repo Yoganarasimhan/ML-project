@@ -1,0 +1,91 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# Create a sample dataset
+data = pd.read_csv('kidney_stone_data.csv')
+
+df = pd.DataFrame(data)
+
+# Check the first few rows of the dataset
+print(df.head())
+
+# Define the features (X) and the target (y)
+X = df[['gravity', 'ph', 'osmo', 'cond', 'urea', 'calc']]
+y = df['target']
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize the features
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Initialize the KNN classifier
+knn = KNeighborsClassifier(n_neighbors=24)
+
+# Fit the model
+knn.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = knn.predict(X_test)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+conf_matrix = confusion_matrix(y_test, y_pred)
+class_report = classification_report(y_test, y_pred)
+
+print("Accuracy:", accuracy)
+print("Confusion Matrix:\n", conf_matrix)
+print("Classification Report:\n", class_report)
+
+
+neighbors_range = range(1, 31)
+accuracy_scores = []
+
+# Iterate over different values of n_neighbors
+for n in neighbors_range:
+    # Initialize the KNN classifier
+    knn = KNeighborsClassifier(n_neighbors=n)
+    
+    # Fit the model
+    knn.fit(X_train, y_train)
+    
+    # Make predictions on the test set
+    y_pred = knn.predict(X_test)
+    
+    # Calculate accuracy and store it
+    accuracy = accuracy_score(y_test, y_pred)
+    accuracy_scores.append(accuracy)
+
+# Plotting the accuracy graph
+plt.figure(figsize=(10, 6))
+plt.plot(neighbors_range, accuracy_scores, marker='o', linestyle='-', color='b', linewidth=2)
+plt.title('Accuracy vs. Number of Neighbors')
+plt.xlabel('Number of Neighbors (K)')
+plt.ylabel('Accuracy')
+plt.xticks(neighbors_range)
+plt.grid(True)
+plt.show()
+
+
+# Histogram for 'ph'
+plt.figure(figsize=(8, 6))
+plt.hist(df['ph'], bins=20, edgecolor='black')
+plt.xlabel('PH')
+plt.ylabel('Frequency')
+plt.title('Histogram of PH')
+plt.show()
+
+# Histogram for 'urea'
+plt.figure(figsize=(8, 6))
+plt.hist(df['urea'], bins=20, edgecolor='black')
+plt.xlabel('UREA')
+plt.ylabel('Frequency')
+plt.title('Histogram of UREA')
+plt.show()
